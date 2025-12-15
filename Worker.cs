@@ -55,6 +55,56 @@ namespace TaskManagerTelegramBot
 
             return new InlineKeyboardMarkup(inlineKeyboards);
         }
+        public async Task SendMessageAsync(long chatId, int typeMessage)
+        {
+            if (typeMessage != 3)
+            {
+                await TelegramBotClient.SendMessage(
+                    chatId,
+                    Messages[typeMessage],
+                    ParseMode.Html,
+                    replyMarkup: GetButtons());
+            }
+            else if (typeMessage == 3)
+            {
+                await TelegramBotClient.SendMessage(
+                    chatId,
+                    $"Указанное вами время и дата не могут быть установлены; " +
+                    $"потому что сейчас уже: {DateTime.Now.ToString("HH.mm dd.MM.yyyy")}");
+            }
+        }
+        public async Task CommandAsync(long chatId, string command)
+        {
+            if (command.ToLower() == "/start") await SendMessageAsync(chatId, 0);
+            else if (command.ToLower() == "/create_task") await SendMessageAsync(chatId, 1);
+            else if (command.ToLower() == "/list_tasks")
+            {
+                Users User = Users.Find(x => x.IdUser == chatId);
+                if (User == null) await SendMessageAsync(chatId, 4);
+                else if (User.Events.Count == 0) await SendMessageAsync(chatId, 4);
+                else
+                {
+                    foreach (Events Event in User.Events)
+                    {
+                        string eventType = Event.IsRecurring ? "?? Повторяющаяся: " : "?? Одноразовая: ";
+                        string eventInfo = Event.IsRecurring ?
+                            $"Каждый {GetDaysString(Event.RecurringDays)} в {Event.Time:t}" :
+                            $"Напоминание: {Event.Time.ToString("HH:mm dd.MM.yyyy")}";
+
+                        await TelegramBotClient.SendMessage(
+                            chatId,
+                            $"{eventType}{eventInfo}" +
+                            $"\nСообщение: {Event.Message}",
+                            replyMarkup: DeleteEvent(Event.Message)
+                            );
+                    }
+                }
+            }
+        }
+        private string GetDaysString(List<DayOfWeek> days)
+        {
+            return string.Join(",", days.Select(d => DayOfWeekReverseMap[d]));
+        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
