@@ -101,6 +101,21 @@ namespace TaskManagerTelegramBot
                 }
             }
         }
+        private async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken cancellationToken)
+        {
+            if (update.Type == UpdateType.Message)
+                await GetMessagesAsync(update.Message);
+            else if (update.Type == UpdateType.CallbackQuery)
+            {
+                CallbackQuery query = update.CallbackQuery;
+                Users User = Users.Find(x => x.IdUser == query.Message.Chat.Id);
+                Events Event = User.Events.Find(x => x.Message == query.Data);
+                User.Events.Remove(Event);
+                DatabaseHelper.DeleteEvent(query.Message.Chat.Id, query.Data);
+
+                await SendMessageAsync(query.Message.Chat.Id, 5);
+            }
+        }
         private string GetDaysString(List<DayOfWeek> days)
         {
             return string.Join(",", days.Select(d => DayOfWeekReverseMap[d]));
