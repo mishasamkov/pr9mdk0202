@@ -10,15 +10,10 @@ namespace TaskManagerTelegramBot_Classes
     {
         public DateTime Time { get; set; }
         public string Message { get; set; }
-        public bool IsRecurring { get; set; }
-        public List<DayOfWeek> RecurringDays { get; set; }
-
-        public Events(DateTime time, string message, bool isRecurring = false, List<DayOfWeek> days = null)
+        public Events(DateTime time, string message)
         {
             Time = time;
             Message = message;
-            IsRecurring = isRecurring;
-            RecurringDays = days ?? new List<DayOfWeek>();
         }
     }
 }
