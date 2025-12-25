@@ -8,13 +8,15 @@ namespace TaskManagerTelegramBot_Classes
 {
     public class Users
     {
-
         public long IdUser { get; set; }
         public List<Events> Events { get; set; }
-        public Users(long idUser)
+        public Users()
+        {
+            Events = new List<Events>();
+        }
+        public Users(long idUser) : this()
         {
             IdUser = idUser;
-            Events = new List<Events>();
         }
     }
 }
